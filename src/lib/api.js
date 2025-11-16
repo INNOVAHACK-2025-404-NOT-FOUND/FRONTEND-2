@@ -80,4 +80,16 @@ export async function createUser(user, token) {
   return request('/users/', { method: 'POST', body: user, token })
 }
 
+export async function updateUser(userId, user, token) {
+  return request(`/users/${userId}`, { method: 'PUT', body: user, token })
+}
+
+export async function deleteUser(userId, token) {
+  return request(`/users/${userId}`, { method: 'DELETE', token })
+}
+
+export async function createCustomScenario(scenarioData, token) {
+  return request('/forecast/custom-scenario', { method: 'POST', body: scenarioData, token })
+}
+
 export { API_BASE_URL }

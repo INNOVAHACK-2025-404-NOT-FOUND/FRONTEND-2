@@ -18,8 +18,8 @@ import { fetchForecastBatch, fetchLatestForecast, listForecastBatches } from '..
 import { getStoredBatchId, setStoredBatchId } from '../lib/forecastStorage.js'
 import { useAuth } from '../hooks/useAuth.js'
 
-const numberFormatter = new Intl.NumberFormat('es-PE', { maximumFractionDigits: 2 })
-const percentFormatter = new Intl.NumberFormat('es-PE', { style: 'percent', maximumFractionDigits: 1 })
+const numberFormatter = new Intl.NumberFormat('es-BO', { maximumFractionDigits: 2 })
+const percentFormatter = new Intl.NumberFormat('es-BO', { style: 'percent', maximumFractionDigits: 1 })
 
 const mapSeries = (records = [], valueField = 'value') =>
   records.map((item) => ({
@@ -46,20 +46,6 @@ const filterFutureSeries = (series) => {
 }
 
 const sumRecords = (series) => series.reduce((acc, entry) => acc + Number(entry.value || 0), 0)
-
-const aggregateByYear = (series) => {
-  const perYear = {}
-  series.forEach((entry) => {
-    if (!entry.date) return
-    const date = new Date(entry.date)
-    if (Number.isNaN(date.getTime())) return
-    const year = date.getFullYear()
-    perYear[year] = (perYear[year] || 0) + Number(entry.value || 0)
-  })
-  return Object.entries(perYear)
-    .sort(([a], [b]) => Number(a) - Number(b))
-    .map(([year, total]) => ({ year: Number(year), total }))
-}
 
 const aggregateMonthly = (series) => {
   const perMonth = {}
@@ -264,13 +250,6 @@ export default function Dashboard() {
     [filteredScenarioSeries],
   )
   const monthlyScenarioRows = useMemo(() => aggregateMonthly(futureScenarioSeries), [futureScenarioSeries])
-  const yearlyScenarioRows = useMemo(() => aggregateByYear(futureScenarioSeries), [futureScenarioSeries])
-  const scenarioTotals = scenario?.totals || data.forecast_totals
-  const filteredScenarioTotals = useMemo(() => {
-    if (!selectedProducts.length) return scenarioTotals
-    const set = new Set(selectedProducts)
-    return scenarioTotals.filter((item) => set.has(item.product))
-  }, [scenarioTotals, selectedProducts])
 
   const currentYear = new Date().getFullYear()
   const previousYear = currentYear - 1
@@ -355,14 +334,14 @@ export default function Dashboard() {
   return (
     <div className="bg-gray-50 min-h-screen px-6 py-12 text-gray-900">
       <div className="mx-auto flex max-w-6xl flex-col gap-10">
-        <section className="rounded-sm border border-gray-200 bg-white p-8 shadow-md shadow-md">
+        <section className="rounded-sm border border-gray-200 bg-white p-8 shadow-md">
           <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
             <div>
               <p className="text-sm uppercase tracking-wider text-gray-600">Panel ejecutivo</p>
               <h1 className="mt-3 text-3xl font-bold">{data.dataset_name}</h1>
               <p className="mt-2 text-sm text-gray-700">
-                �ltima carga:{' '}
-                {data.uploaded_at ? new Date(data.uploaded_at).toLocaleString('es-PE') : 'Sin registros'}
+                Última carga:{' '}
+                {data.uploaded_at ? new Date(data.uploaded_at).toLocaleString('es-BO') : 'Sin registros'}
                 {data.uploaded_by && ` � por ${data.uploaded_by}`}
               </p>
               {data.source_file && <p className="mt-1 text-xs text-gray-700 font-medium">Archivo base: {data.source_file}</p>}
@@ -412,7 +391,7 @@ export default function Dashboard() {
           )}
           <div className="mt-6 grid gap-4 md:grid-cols-3">
             {summaryCards.map((card) => (
-              <div key={card.label} className="rounded-sm border border-gray-200 bg-white border border-gray-200 p-4">
+              <div key={card.label} className="rounded-sm border border-gray-200 bg-white p-4">
                 <card.icon className="h-5 w-5 text-gray-600" />
                 <p className="mt-3 text-2xl font-bold">{card.value}</p>
                 <p className="text-xs uppercase tracking-wider text-gray-600">{card.label}</p>
@@ -554,7 +533,7 @@ export default function Dashboard() {
                     <td className="px-4 py-3 capitalize">
                       {row.month === 'sin-fecha'
                         ? 'Sin fecha'
-                        : new Date(`${row.month}-01`).toLocaleDateString('es-PE', {
+                        : new Date(`${row.month}-01`).toLocaleDateString('es-BO', {
                             month: 'short',
                             year: 'numeric',
                           })}

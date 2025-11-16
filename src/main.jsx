@@ -11,6 +11,8 @@ import Landing from './pages/Landing.jsx'
 import Login from './pages/Login.jsx'
 import Uploads from './pages/Uploads.jsx'
 import Admin from './pages/Admin.jsx'
+import ScenarioComparison from './pages/ScenarioComparison.jsx'
+import ScenarioBuilder from './pages/ScenarioBuilder.jsx'
 
 const router = createBrowserRouter([
   {
@@ -32,6 +34,22 @@ const router = createBrowserRouter([
         element: (
           <ProtectedRoute>
             <Uploads />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'scenarios/comparison',
+        element: (
+          <ProtectedRoute>
+            <ScenarioComparison />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'scenarios/builder',
+        element: (
+          <ProtectedRoute>
+            <ScenarioBuilder />
           </ProtectedRoute>
         ),
       },

@@ -1,11 +1,12 @@
-import { Link, useLocation } from 'react-router-dom'
-import { LayoutDashboard, LogIn, LogOut, ShieldCheck } from 'lucide-react'
+import { Link } from 'react-router-dom'
+import { LayoutDashboard, LogIn, LogOut, ShieldCheck, TrendingUp, GitCompare } from 'lucide-react'
+import { useState } from 'react'
 
 import { useAuth } from '../hooks/useAuth.js'
 
 export default function NavBar() {
-  const location = useLocation()
   const { isAuthenticated, user, logout } = useAuth()
+  const [showScenarioMenu, setShowScenarioMenu] = useState(false)
 
   const handleLogout = () => {
     logout()
@@ -41,6 +42,58 @@ export default function NavBar() {
               >
                 Dashboard
               </Link>
+              
+              {/* Menú desplegable de Escenarios */}
+              <div className="relative">
+                <button 
+                  onClick={() => setShowScenarioMenu(!showScenarioMenu)}
+                  className="text-sm font-semibold text-gray-700 hover:text-blue-600 transition-colors flex items-center gap-1"
+                >
+                  Escenarios
+                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                  </svg>
+                </button>
+                
+                {showScenarioMenu && (
+                  <>
+                    <div 
+                      className="fixed inset-0 z-10" 
+                      onClick={() => setShowScenarioMenu(false)}
+                    />
+                    <div className="absolute top-full left-0 mt-1 w-56 bg-white rounded-md shadow-lg border border-gray-200 py-1 z-50">
+                      <Link
+                        to="/scenarios/comparison"
+                        onClick={() => setShowScenarioMenu(false)}
+                        className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      >
+                        <GitCompare className="h-4 w-4" />
+                        Comparativa de Escenarios
+                      </Link>
+                      <Link
+                        to="/scenarios/builder"
+                        onClick={() => setShowScenarioMenu(false)}
+                        className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-100"
+                      >
+                        <TrendingUp className="h-4 w-4" />
+                        Crear Escenario Personalizado
+                      </Link>
+                    </div>
+                  </>
+                )}
+              </div>
+              
+              {/* Botón Admin - Solo visible para ADMIN */}
+              {user.role === 'ADMIN' && (
+                <Link
+                  to="/admin"
+                  className="inline-flex items-center gap-2 rounded-sm bg-purple-600 px-4 py-2 text-sm font-semibold text-white transition-all hover:bg-purple-700"
+                >
+                  <ShieldCheck className="h-4 w-4" />
+                  Admin
+                </Link>
+              )}
+              
               <div className="h-6 w-px bg-gray-300"></div>
               <span className="text-sm font-medium text-gray-900">
                 {user.full_name.split(' ')[0]}
