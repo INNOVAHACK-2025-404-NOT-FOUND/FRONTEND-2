@@ -66,3 +66,20 @@ body {
   background-size: 200% 200%;
   animation: gradient 5s ease infinite;
 }
+
+/* Estilos para select dropdown - texto negro en las opciones */
+select {
+  color: #000;
+}
+
+select option {
+  color: #000;
+  background-color: #ffffff;
+}
+
+select option:checked {
+  background: linear-gradient(#06b6d4, #06b6d4);
+  background-color: #06b6d4;
+  color: #ffffff;
+}
+

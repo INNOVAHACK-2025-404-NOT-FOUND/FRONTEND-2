@@ -13,6 +13,8 @@ import {
 import { fetchForecastBatch, fetchLatestForecast, listForecastBatches } from '../lib/api.js'
 import { getStoredBatchId, setStoredBatchId } from '../lib/forecastStorage.js'
 import { useAuth } from '../hooks/useAuth.js'
+import ScenarioComparisonChart from '../components/ScenarioComparisonChart.jsx'
+import ScenariosComparison from '../components/ScenariosComparison.jsx'
 
 const numberFormatter = new Intl.NumberFormat('es-PE', { maximumFractionDigits: 2 })
 const currencyFormatter = new Intl.NumberFormat('es-PE', { 
@@ -163,7 +165,7 @@ export default function DashboardSimple() {
                 <select
                   value={activeBatchId ?? ''}
                   onChange={handleBatchChange}
-                  className="mt-2 min-w-[220px] rounded-full border border-white/20 bg-white/5 px-4 py-2 text-sm text-white focus:border-cyan-300 focus:outline-none"
+                  className="mt-2 min-w-[220px] rounded-full border border-white/20 bg-white/5 px-4 py-2 text-sm text-black focus:border-cyan-300 focus:outline-none"
                 >
                   <option value="">Último disponible</option>
                   {datasetOptions.map((option) => (
@@ -211,126 +213,85 @@ export default function DashboardSimple() {
               Análisis de 3 escenarios considerando variaciones en ventas y precios según volatilidad del producto
             </p>
 
-            <div className="grid gap-6 md:grid-cols-3">
-              {Object.entries(data.scenarios).map(([key, scenario]) => {
-                const summary = scenario.summary || {}
-                return (
-                  <div
-                    key={key}
-                    className={`rounded-2xl border p-6 ${
-                      key === 'base'
-                        ? 'border-blue-400/50 bg-blue-500/10'
-                        : key === 'pessimistic'
-                        ? 'border-red-400/50 bg-red-500/10'
-                        : 'border-green-400/50 bg-green-500/10'
-                    }`}
-                  >
-                    <h3 className="mb-4 text-xl font-bold">{scenario.label}</h3>
-                    
-                    <div className="space-y-4">
-                      <div>
-                        <div className="flex items-center gap-2 text-sm text-slate-300">
-                          <Package className="h-4 w-4" />
-                          Unidades Vendidas
-                        </div>
-                        <p className="mt-1 text-2xl font-bold">
-                          {numberFormatter.format(summary.total_ventas || 0)}
-                        </p>
-                      </div>
+            <ScenariosComparison
+              scenarios={data.scenarios}
+              currencyFormatter={currencyFormatter}
+              numberFormatter={numberFormatter}
+            />
 
-                      <div>
-                        <div className="flex items-center gap-2 text-sm text-slate-300">
-                          <DollarSign className="h-4 w-4" />
-                          Ingresos Totales
-                        </div>
-                        <p className="mt-1 text-2xl font-bold text-green-300">
-                          {currencyFormatter.format(summary.total_ingresos || 0)}
-                        </p>
-                      </div>
+            {/* Gráficos comparativos */}
+            <div className="mt-8 space-y-8">
+              {/* Gráfico de Barras Comparativo - Métricas Globales */}
+              <div className="rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-md">
+                <h3 className="mb-6 text-xl font-bold">Comparación de Métricas Clave</h3>
+                <p className="mb-4 text-sm text-slate-300">
+                  Análisis visual de unidades vendidas, ingresos, costos y márgenes entre los tres escenarios
+                </p>
+                <ScenarioComparisonChart 
+                  scenarios={data.scenarios} 
+                  currencyFormatter={currencyFormatter}
+                  numberFormatter={numberFormatter}
+                />
+              </div>
 
-                      <div>
-                        <div className="flex items-center gap-2 text-sm text-slate-300">
-                          <BarChart3 className="h-4 w-4" />
-                          Costos Totales
-                        </div>
-                        <p className="mt-1 text-2xl font-bold text-orange-300">
-                          {currencyFormatter.format(summary.total_costos || 0)}
-                        </p>
-                      </div>
-
-                      <div className="border-t border-white/10 pt-4">
-                        <div className="flex items-center gap-2 text-sm text-slate-300">
-                          <TrendingUp className="h-4 w-4" />
-                          Margen de Ganancia
-                        </div>
-                        <p className="mt-1 text-3xl font-bold text-cyan-300">
-                          {currencyFormatter.format(summary.total_margen || 0)}
-                        </p>
-                        <p className="mt-1 text-sm text-slate-400">
-                          {percentFormatter.format((summary.margen_promedio_pct || 0) / 100)}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-
-            {/* Tabla comparativa */}
-            <div className="mt-8 overflow-x-auto">
-              <h3 className="mb-4 text-xl font-bold">Resumen Comparativo</h3>
-              <table className="w-full text-sm">
-                <thead>
-                  <tr className="border-b border-white/10">
-                    <th className="px-4 py-3 text-left text-slate-300">Métrica</th>
-                    <th className="px-4 py-3 text-right text-slate-300">Pesimista</th>
-                    <th className="px-4 py-3 text-right text-slate-300">Realista</th>
-                    <th className="px-4 py-3 text-right text-slate-300">Optimista</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {[
-                    {
-                      label: 'Ventas (unidades)',
-                      key: 'total_ventas',
-                      format: (v) => numberFormatter.format(v),
-                    },
-                    {
-                      label: 'Ingresos',
-                      key: 'total_ingresos',
-                      format: (v) => currencyFormatter.format(v),
-                    },
-                    {
-                      label: 'Costos',
-                      key: 'total_costos',
-                      format: (v) => currencyFormatter.format(v),
-                    },
-                    {
-                      label: 'Margen',
-                      key: 'total_margen',
-                      format: (v) => currencyFormatter.format(v),
-                    },
-                    {
-                      label: 'Margen %',
-                      key: 'margen_promedio_pct',
-                      format: (v) => percentFormatter.format(v / 100),
-                    },
-                  ].map((metric) => (
-                    <tr key={metric.key} className="border-b border-white/5 hover:bg-white/5">
-                      <td className="px-4 py-3 font-medium">{metric.label}</td>
-                      <td className="px-4 py-3 text-right">
-                        {metric.format(data.scenarios.pessimistic?.summary?.[metric.key] || 0)}
-                      </td>
-                      <td className="px-4 py-3 text-right">
-                        {metric.format(data.scenarios.base?.summary?.[metric.key] || 0)}
-                      </td>
-                      <td className="px-4 py-3 text-right">
-                        {metric.format(data.scenarios.optimistic?.summary?.[metric.key] || 0)}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              {/* Tabla comparativa (referencia numérica) */}
+              <div className="rounded-2xl border border-white/10 bg-white/5 p-6 backdrop-blur-md">
+                <h3 className="mb-4 text-xl font-bold">Resumen Comparativo (Tabla Detallada)</h3>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-sm">
+                    <thead>
+                      <tr className="border-b border-white/10">
+                        <th className="px-4 py-3 text-left text-slate-300">Métrica</th>
+                        <th className="px-4 py-3 text-right text-slate-300">Pesimista</th>
+                        <th className="px-4 py-3 text-right text-slate-300">Realista</th>
+                        <th className="px-4 py-3 text-right text-slate-300">Optimista</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {[
+                        {
+                          label: 'Ventas (unidades)',
+                          key: 'total_ventas',
+                          format: (v) => numberFormatter.format(v),
+                        },
+                        {
+                          label: 'Ingresos',
+                          key: 'total_ingresos',
+                          format: (v) => currencyFormatter.format(v),
+                        },
+                        {
+                          label: 'Costos',
+                          key: 'total_costos',
+                          format: (v) => currencyFormatter.format(v),
+                        },
+                        {
+                          label: 'Margen',
+                          key: 'total_margen',
+                          format: (v) => currencyFormatter.format(v),
+                        },
+                        {
+                          label: 'Margen %',
+                          key: 'margen_promedio_pct',
+                          format: (v) => percentFormatter.format(v / 100),
+                        },
+                      ].map((metric) => (
+                        <tr key={metric.key} className="border-b border-white/5 hover:bg-white/5">
+                          <td className="px-4 py-3 font-medium">{metric.label}</td>
+                          <td className="px-4 py-3 text-right">
+                            {metric.format(data.scenarios.pessimistic?.summary?.[metric.key] || 0)}
+                          </td>
+                          <td className="px-4 py-3 text-right">
+                            {metric.format(data.scenarios.base?.summary?.[metric.key] || 0)}
+                          </td>
+                          <td className="px-4 py-3 text-right">
+                            {metric.format(data.scenarios.optimistic?.summary?.[metric.key] || 0)}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
             </div>
 
             {/* Top productos por margen */}
